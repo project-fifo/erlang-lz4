@@ -34,7 +34,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 static ERL_NIF_TERM atom_ok;
 static ERL_NIF_TERM atom_error;
 
-static inline void store_le32(char *c, u_int32_t x)
+static inline void store_le32(unsigned char *c, u_int32_t x)
 {
   c[0] = x & 0xff;
   c[1] = (x >> 8) & 0xff;
@@ -42,7 +42,7 @@ static inline void store_le32(char *c, u_int32_t x)
   c[3] = (x >> 24) & 0xff;
 }
 
-static inline u_int32_t load_le32(const char *c)
+static inline u_int32_t load_le32(unsigned const char *c)
 {
   const u_int8_t *d = (const u_int8_t *)c;
   u_int32_t r = d[0];
@@ -90,9 +90,9 @@ unload(ErlNifEnv* env, void* priv)
 
 static ERL_NIF_TERM
 compress(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
-  ERL_NIF_TERM result;
+  ERL_NIF_TERM result, out;
   ErlNifBinary source;
-  char *result_buf = NULL;
+  unsigned char *result_buf = NULL;
   int dest_size;
   int real_size;
 
@@ -104,10 +104,10 @@ compress(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
   store_le32(result_buf, source.size);
 
-  real_size = LZ4_compress(source.data, result_buf + hdr_size, source.size);
-  enif_realloc_binary(&result, real_size);
+  real_size = LZ4_compress((const char *) source.data, (char *) result_buf + hdr_size, source.size);
+  out = enif_make_sub_binary(env, result, 0, real_size);
 
-  return enif_make_tuple2(env, atom_ok, result);
+  return enif_make_tuple2(env, atom_ok, out);
 }
 
 /**********************************************************************
@@ -132,7 +132,7 @@ static ERL_NIF_TERM
 uncompress(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   ERL_NIF_TERM result;
   ErlNifBinary source;
-  char *result_buf = NULL;
+  unsigned char *result_buf = NULL;
   u_int32_t dest_size;
 
   if (!enif_inspect_binary(env, argv[0], &source)) return enif_make_badarg(env);
@@ -141,7 +141,7 @@ uncompress(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
   result_buf = enif_make_new_binary(env, dest_size, &result);
 
-  LZ4_uncompress(source.data + hdr_size, result_buf, dest_size);
+  LZ4_uncompress((const char*) source.data + hdr_size, (char *) result_buf, dest_size);
 
   return enif_make_tuple2(env, atom_ok, result);
 }

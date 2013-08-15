@@ -28,13 +28,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <errno.h>
 #include <stdlib.h>
 
+#include "sys/types.h"
 #include "lz4/lz4.h"
 #include "lz4/lz4hc.h"
 
 static ERL_NIF_TERM atom_ok;
 static ERL_NIF_TERM atom_error;
 
-static inline void store_le32(unsigned char *c, u_int32_t x)
+static inline void store_le32(unsigned char *c, uint32_t x)
 {
   c[0] = x & 0xff;
   c[1] = (x >> 8) & 0xff;
@@ -42,10 +43,10 @@ static inline void store_le32(unsigned char *c, u_int32_t x)
   c[3] = (x >> 24) & 0xff;
 }
 
-static inline u_int32_t load_le32(unsigned const char *c)
+static inline uint32_t load_le32(unsigned const char *c)
 {
-  const u_int8_t *d = (const u_int8_t *)c;
-  u_int32_t r = d[0];
+  const uint8_t *d = (const uint8_t *)c;
+  uint32_t r = d[0];
 
   r = (r << 8) | d[1];
   r = (r << 8) | d[2];
@@ -53,7 +54,7 @@ static inline u_int32_t load_le32(unsigned const char *c)
   return r;
 }
 
-static const int hdr_size = sizeof(u_int32_t);
+static const int hdr_size = sizeof(uint32_t);
 
 static int
 load(ErlNifEnv* env, void** priv, ERL_NIF_TERM load_info)
@@ -133,7 +134,7 @@ uncompress(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   ERL_NIF_TERM result;
   ErlNifBinary source;
   unsigned char *result_buf = NULL;
-  u_int32_t dest_size;
+  uint32_t dest_size;
 
   if (!enif_inspect_binary(env, argv[0], &source)) return enif_make_badarg(env);
 

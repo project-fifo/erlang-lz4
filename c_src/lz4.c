@@ -27,14 +27,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <erl_driver.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <stdint.h> 
 
 #include "sys/types.h"
 #include "lz4/lz4.h"
 #include "lz4/lz4hc.h"
-
-#ifndef u_int32_t
-#define u_int32_t uint32_t
-#endif
 
 static ERL_NIF_TERM atom_ok;
 static ERL_NIF_TERM atom_error;
